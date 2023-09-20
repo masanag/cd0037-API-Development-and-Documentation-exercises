@@ -149,9 +149,35 @@ def create_app(test_config=None):
                 'error': 'An error occured while deleting the book'
             }), 422
 
-    # @TODO: Write a route that create a new book.
-    #        Response body keys: 'success', 'created'(id of created book), 'books' and 'total_books'
-    # TEST: When completed, you will be able to a new book using the form. Try doing so from the last page of books.
-    #       Your new book should show up immediately after you submit it at the end of the page.
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False,
+            "error": 404,
+            "message": "Not found",
+            }), 404
 
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False,
+            "error": 422,
+            "message": "unprocessable",
+            }), 422
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False,
+            "error": 400,
+            "message": "badrequest",
+            }), 400
+
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({
+            "success": False,
+            "error": 405,
+            "message": "method not allowed",
+            }), 405
     return app
