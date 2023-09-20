@@ -59,5 +59,5 @@ class Book(db.Model):
             "id": self.id,
             "title": self.title,
             "author": self.author,
-            "rating": self.rating,
+            "rating": "★" * self.rating,
         }
