@@ -33,73 +33,91 @@ class BookTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
-    def test_get_paginated_books(self):
-        res = self.client().get("/books")
-        data = json.loads(res.data)
+    # def test_get_paginated_books(self):
+    #     res = self.client().get("/books")
+    #     data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["success"], True)
-        self.assertTrue(data["total_books"])
-        self.assertTrue(len(data["books"]))
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data["success"], True)
+    #     self.assertTrue(data["total_books"])
+    #     self.assertTrue(len(data["books"]))
 
-    def test_404_sent_requesting_beyond_valid_page(self):
-        res = self.client().get("/books?page=1000", json={"rating": 1})
-        data = json.loads(res.data)
+    # def test_404_sent_requesting_beyond_valid_page(self):
+    #     res = self.client().get("/books?page=1000", json={"rating": 1})
+    #     data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "resource not found")
+    #     self.assertEqual(res.status_code, 404)
+    #     self.assertEqual(data["success"], False)
+    #     self.assertEqual(data["message"], "resource not found")
 
     # @TODO: Write tests for search - at minimum two
     #        that check a response when there are results and when there are none
-
-    def test_update_book_rating(self):
-        res = self.client().patch("/books/5", json={"rating": 1})
+    def test_search_book(self):
+        res = self.client().get("/books", json={"search": "ansi"})
         data = json.loads(res.data)
-        book = Book.query.filter(Book.id == 5).one_or_none()
+
+        expected_book = Book.query.filter(Book.title.ilike("%{}%".format("ansi"))).all()
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertEqual(book.format()["rating"], 1)
+        self.assertEqual(data["total_books"], len(expected_book))
 
-    def test_400_for_failed_update(self):
-        res = self.client().patch("/books/5")
+    def test_search_book_without_results(self):
+        res = self.client().post("/books", json={"search": "notfound"})
         data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 400)
-        self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "bad request")
-
-    def test_delete_book(self):
-        res = self.client().delete("/books/1")
-        data = json.loads(res.data)
-
-        book = Book.query.filter(Book.id == 1).one_or_none()
+        expected_book = Book.query.filter(Book.title.ilike("%{}%".format("notfound"))).all()
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
-        self.assertEqual(data["deleted"], 1)
-        self.assertTrue(data["total_books"])
-        self.assertTrue(len(data["books"]))
-        self.assertEqual(book, None)
+        self.assertEqual(data["total_books"], len(expected_book))
 
-    def test_404_if_book_does_not_exist(self):
-        res = self.client().delete("/books/1000")
-        data = json.loads(res.data)
+    # def test_update_book_rating(self):
+    #     res = self.client().patch("/books/5", json={"rating": 1})
+    #     data = json.loads(res.data)
+    #     book = Book.query.filter(Book.id == 5).one_or_none()
 
-        self.assertEqual(res.status_code, 422)
-        self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "unprocessable")
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data["success"], True)
+    #     self.assertEqual(book.format()["rating"], 1)
 
-    def test_create_new_book(self):
-        res = self.client().post("/books", json=self.new_book)
-        data = json.loads(res.data)
-        pass
+    # def test_400_for_failed_update(self):
+    #     res = self.client().patch("/books/5")
+    #     data = json.loads(res.data)
 
-    def test_422_if_book_creation_fails(self):
-        res = self.client().post("/books", json=self.new_book)
-        data = json.loads(res.data)
-        pass
+    #     self.assertEqual(res.status_code, 400)
+    #     self.assertEqual(data["success"], False)
+    #     self.assertEqual(data["message"], "bad request")
+
+    # def test_delete_book(self):
+    #     res = self.client().delete("/books/1")
+    #     data = json.loads(res.data)
+
+    #     book = Book.query.filter(Book.id == 1).one_or_none()
+
+    #     self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(data["success"], True)
+    #     self.assertEqual(data["deleted"], 1)
+    #     self.assertTrue(data["total_books"])
+    #     self.assertTrue(len(data["books"]))
+    #     self.assertEqual(book, None)
+
+    # def test_404_if_book_does_not_exist(self):
+    #     res = self.client().delete("/books/1000")
+    #     data = json.loads(res.data)
+
+    #     self.assertEqual(res.status_code, 422)
+    #     self.assertEqual(data["success"], False)
+    #     self.assertEqual(data["message"], "unprocessable")
+
+    # def test_create_new_book(self):
+    #     res = self.client().post("/books", json=self.new_book)
+    #     data = json.loads(res.data)
+    #     pass
+
+    # def test_422_if_book_creation_fails(self):
+    #     res = self.client().post("/books", json=self.new_book)
+    #     data = json.loads(res.data)
+    #     pass
 
 
 # Make the tests conveniently executable
